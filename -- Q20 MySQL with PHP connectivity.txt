@@ -1,0 +1,116 @@
+-- Q20: MySQL with PHP connectivity (complete setup with code)
+-- sql
+sudo mysql
+CREATE DATABASE student_db;
+USE student_db;
+CREATE TABLE students(student_id INT PRIMARY KEY, name VARCHAR(100), age INT, course VARCHAR(100));
+INSERT INTO students VALUES(1,'Rohan Mehta',20,'Computer Engineering'),(2,'Priya Sharma',21,'IT Engineering'),(3,'Amit Verma',19,'Electronics Engineering'),(4,'Sneha Patel',22,'Computer Engineering'),(5,'Rahul Singh',20,'IT Engineering');
+
+-- Queries start here
+SELECT * FROM students;
+SELECT * FROM students WHERE course='Computer Engineering';
+UPDATE students SET age=21 WHERE student_id=1;
+DELETE FROM students WHERE student_id=5;
+SELECT COUNT(*) FROM students;
+
+php
+<?php
+// Database configuration
+$servername = "localhost";
+$username = "root";
+$password = "";  // your MySQL password
+$dbname = "student_db";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+echo "Connected to MySQL successfully<br><br>";
+
+// 1. Display all students
+echo "<h3>All Students:</h3>";
+$sql = "SELECT * FROM students";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    echo "<table border='1'>";
+    echo "<tr><th>Student ID</th><th>Name</th><th>Age</th><th>Course</th></tr>";
+    while($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . $row["student_id"] . "</td>";
+        echo "<td>" . $row["name"] . "</td>";
+        echo "<td>" . $row["age"] . "</td>";
+        echo "<td>" . $row["course"] . "</td>";
+        echo "</tr>";
+    }
+    echo "</table><br>";
+} else {
+    echo "0 results<br>";
+}
+
+// 2. Find Computer Engineering students
+echo "<h3>Computer Engineering Students:</h3>";
+$sql = "SELECT * FROM students WHERE course='Computer Engineering'";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        echo "Name: " . $row["name"] . " - Age: " . $row["age"] . "<br>";
+    }
+    echo "<br>";
+}
+
+// 3. Insert new student
+$sql = "INSERT INTO students (student_id, name, age, course) VALUES (6, 'Karan Kumar', 21, 'Mechanical Engineering')";
+if ($conn->query($sql) === TRUE) {
+    echo "New student inserted successfully<br>";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+// 4. Update student age
+$sql = "UPDATE students SET age=22 WHERE student_id=2";
+if ($conn->query($sql) === TRUE) {
+    echo "Student age updated successfully<br>";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+// 5. Delete student
+$sql = "DELETE FROM students WHERE student_id=3";
+if ($conn->query($sql) === TRUE) {
+    echo "Student deleted successfully<br><br>";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+// 6. Count total students
+$sql = "SELECT COUNT(*) as total FROM students";
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+echo "<h3>Total Students: " . $row['total'] . "</h3>";
+
+$conn->close();
+?>
+
+
+bash
+# Install PHP and Apache
+sudo apt update
+sudo apt install apache2 php libapache2-mod-php php-mysql
+
+# Start Apache
+sudo systemctl start apache2
+
+# Copy PHP file to web directory
+sudo cp mysql_connect.php /var/www/html/
+
+# Open in browser
+# http://localhost/mysql_connect.php
+
+# Or run from command line
+php mysql_connect.php
+

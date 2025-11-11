@@ -1,0 +1,102 @@
+bash
+-- Q16: MongoDB with Java connectivity (complete setup with code)
+mongosh
+use student_db
+db.students.insertMany([
+{student_id:1,name:"Rohan Mehta",age:20,course:"Computer Engineering"},
+{student_id:2,name:"Priya Sharma",age:21,course:"IT Engineering"},
+{student_id:3,name:"Amit Verma",age:19,course:"Electronics Engineering"},
+{student_id:4,name:"Sneha Patel",age:22,course:"Computer Engineering"},
+{student_id:5,name:"Rahul Singh",age:20,course:"IT Engineering"}
+])
+
+-- Queries start here
+db.students.find()
+db.students.find({course:"Computer Engineering"})
+db.students.updateOne({student_id:1},{$set:{age:21}})
+db.students.deleteOne({student_id:5})
+db.students.countDocuments()
+
+
+java
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import com.mongodb.client.FindIterable;
+
+public class MongoDBConnect {
+    public static void main(String[] args) {
+        try {
+            // Connect to MongoDB
+            MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+            System.out.println("Connected to MongoDB successfully");
+            
+            // Access database
+            MongoDatabase database = mongoClient.getDatabase("student_db");
+            System.out.println("Database: " + database.getName());
+            
+            // Access collection
+            MongoCollection<Document> collection = database.getCollection("students");
+            System.out.println("Collection: students");
+            
+            // Display all documents
+            System.out.println("\nAll Students:");
+            FindIterable<Document> documents = collection.find();
+            for (Document doc : documents) {
+                System.out.println(doc.toJson());
+            }
+            
+            // Find Computer Engineering students
+            System.out.println("\nComputer Engineering Students:");
+            FindIterable<Document> ceStudents = collection.find(new Document("course", "Computer Engineering"));
+            for (Document doc : ceStudents) {
+                System.out.println("Name: " + doc.getString("name") + ", Age: " + doc.getInteger("age"));
+            }
+            
+            // Insert new document
+            Document newStudent = new Document("student_id", 6)
+                .append("name", "Karan Kumar")
+                .append("age", 21)
+                .append("course", "Mechanical Engineering");
+            collection.insertOne(newStudent);
+            System.out.println("\nInserted new student: Karan Kumar");
+            
+            // Update document
+            collection.updateOne(
+                new Document("student_id", 2),
+                new Document("$set", new Document("age", 22))
+            );
+            System.out.println("Updated student_id 2 age to 22");
+            
+            // Delete document
+            collection.deleteOne(new Document("student_id", 3));
+            System.out.println("Deleted student_id 3");
+            
+            // Count documents
+            long count = collection.countDocuments();
+            System.out.println("\nTotal students: " + count);
+            
+            mongoClient.close();
+            
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+
+bash
+# Download MongoDB Java Driver
+wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/4.11.1/mongodb-driver-sync-4.11.1.jar
+wget https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar
+wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/4.11.1/mongodb-driver-core-4.11.1.jar
+
+# Compile
+javac -cp ".:mongodb-driver-sync-4.11.1.jar:bson-4.11.1.jar:mongodb-driver-core-4.11.1.jar" MongoDBConnect.java
+
+# Run
+java -cp ".:mongodb-driver-sync-4.11.1.jar:bson-4.11.1.jar:mongodb-driver-core-4.11.1.jar" MongoDBConnect
+
