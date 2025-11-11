@@ -1,0 +1,2 @@
+# dbms
+dbms solved practicals
