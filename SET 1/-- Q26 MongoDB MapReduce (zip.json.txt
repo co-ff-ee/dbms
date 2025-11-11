@@ -1,0 +1,12 @@
+-- Q26: MongoDB MapReduce (zip.json - total population by state)
+mongosh
+use zipDB
+
+-- Queries start here
+db.zips.mapReduce(
+function(){emit(this.state,this.pop);},
+function(key,values){return Array.sum(values);},
+{out:"state_population"}
+)
+db.state_population.find()
+db.state_population.find().sort({value:-1})

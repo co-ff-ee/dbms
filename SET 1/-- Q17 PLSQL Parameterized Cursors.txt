@@ -1,0 +1,90 @@
+-- Q17: PLSQL Parameterized Cursors (account activation, roll call merge, dept salary)
+sudo mysql
+CREATE DATABASE cursor_db2;
+USE cursor_db2;
+CREATE TABLE Account(AccNo INT PRIMARY KEY, Status VARCHAR(10), LastTransactionDate DATE);
+INSERT INTO Account VALUES(101,'Inactive','2024-01-01'),(102,'Active','2025-10-01'),(103,'Inactive','2023-06-15');
+
+DELIMITER $$
+CREATE PROCEDURE ActivateAccountsParam()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE v_accno INT;
+DECLARE count_activated INT DEFAULT 0;
+DECLARE cur CURSOR FOR SELECT AccNo FROM Account WHERE Status='Inactive' AND DATEDIFF(CURDATE(),LastTransactionDate)>365;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+OPEN cur;
+read_loop: LOOP
+FETCH cur INTO v_accno;
+IF done THEN
+LEAVE read_loop;
+END IF;
+UPDATE Account SET Status='Active' WHERE AccNo=v_accno;
+SET count_activated=count_activated+1;
+END LOOP;
+CLOSE cur;
+IF count_activated>0 THEN
+SELECT CONCAT(count_activated,' accounts activated') AS message;
+ELSE
+SELECT 'No accounts to activate' AS message;
+END IF;
+END$$
+DELIMITER ;
+
+CREATE TABLE NRollCall(Roll INT, Name VARCHAR(100), Class VARCHAR(10));
+CREATE TABLE ORollCall(Roll INT, Name VARCHAR(100), Class VARCHAR(10));
+INSERT INTO NRollCall VALUES(1,'Rohan','TE'),(2,'Kavya','TE'),(3,'Arjun','TE');
+INSERT INTO ORollCall VALUES(1,'Rohan','TE'),(4,'Priya','TE');
+
+-- Queries start here
+DELIMITER $$
+CREATE PROCEDURE MergeRollCall()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE v_roll INT;
+DECLARE v_name VARCHAR(100);
+DECLARE v_class VARCHAR(10);
+DECLARE v_count INT;
+DECLARE cur CURSOR FOR SELECT Roll, Name, Class FROM NRollCall;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+OPEN cur;
+read_loop: LOOP
+FETCH cur INTO v_roll, v_name, v_class;
+IF done THEN
+LEAVE read_loop;
+END IF;
+SELECT COUNT(*) INTO v_count FROM ORollCall WHERE Roll=v_roll;
+IF v_count=0 THEN
+INSERT INTO ORollCall VALUES(v_roll,v_name,v_class);
+END IF;
+END LOOP;
+CLOSE cur;
+SELECT 'Roll call merged successfully' AS message;
+END$$
+DELIMITER ;
+
+CREATE TABLE EMP(Eno INT, Dno INT, Salary DECIMAL(10,2));
+CREATE TABLE DeptSalary(Dno INT, AvgSalary DECIMAL(10,2));
+INSERT INTO EMP VALUES(1,10,25000),(2,10,35000),(3,20,45000),(4,20,55000);
+
+DELIMITER $$
+CREATE PROCEDURE CalculateDeptAvgSalary()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE v_dno INT;
+DECLARE v_avg_sal DECIMAL(10,2);
+DECLARE cur CURSOR FOR SELECT Dno, AVG(Salary) AS avg_sal FROM EMP GROUP BY Dno;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+TRUNCATE TABLE DeptSalary;
+OPEN cur;
+read_loop: LOOP
+FETCH cur INTO v_dno, v_avg_sal;
+IF done THEN
+LEAVE read_loop;
+END IF;
+INSERT INTO DeptSalary VALUES(v_dno,v_avg_sal);
+END LOOP;
+CLOSE cur;
+SELECT 'Department average salary calculated' AS message;
+END$$
+DELIMITER ;

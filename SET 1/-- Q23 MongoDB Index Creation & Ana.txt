@@ -1,0 +1,15 @@
+-- Q23: MongoDB Index Creation & Analysis (zip.json, composite, multikey indexes)
+mongosh
+use zipDB
+
+-- Queries start here
+db.zips.createIndex({pop:1})
+db.zips.createIndex({state:1,city:1})
+db.zips.createIndex({loc:1})
+db.zips.find({pop:{$gt:1600}})
+db.zips.find({state:"KS"})
+db.zips.find({city:"TIMKEN"},{loc:1,_id:0})
+db.zips.getIndexes()
+db.zips.find({pop:{$gt:1600}}).explain("executionStats")
+db.zips.find({state:"KS"}).explain("executionStats")
+db.zips.find({city:"TIMKEN"}).explain("executionStats")

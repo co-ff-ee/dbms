@@ -1,0 +1,53 @@
+-- Q18: PLSQL Triggers (audit trail, salary validation)
+sudo mysql
+CREATE DATABASE trigger_db;
+USE trigger_db;
+CREATE TABLE ClientMstr(ClientID INT PRIMARY KEY, ClientName VARCHAR(100), Balance DECIMAL(10,2));
+CREATE TABLE AuditTrade(ClientID INT, OldClientName VARCHAR(100), OldBalance DECIMAL(10,2), Operation VARCHAR(10), OperationDate DATETIME);
+INSERT INTO ClientMstr VALUES(1,'Amit Sharma',50000),(2,'Priya Verma',75000);
+
+DELIMITER $$
+CREATE TRIGGER client_update_audit
+AFTER UPDATE ON ClientMstr
+FOR EACH ROW
+BEGIN
+INSERT INTO AuditTrade VALUES(OLD.ClientID, OLD.ClientName, OLD.Balance, 'UPDATE', NOW());
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER client_delete_audit
+AFTER DELETE ON ClientMstr
+FOR EACH ROW
+BEGIN
+INSERT INTO AuditTrade VALUES(OLD.ClientID, OLD.ClientName, OLD.Balance, 'DELETE', NOW());
+END$$
+DELIMITER ;
+
+CREATE TABLE Emp(Eno INT PRIMARY KEY, Ename VARCHAR(100), Salary DECIMAL(10,2));
+CREATE TABLE Tracking(Eno INT, Salary DECIMAL(10,2), AttemptDate DATETIME);
+
+-- Queries start here
+DELIMITER $$
+CREATE TRIGGER salary_validation_insert
+BEFORE INSERT ON Emp
+FOR EACH ROW
+BEGIN
+IF NEW.Salary<50000 THEN
+INSERT INTO Tracking VALUES(NEW.Eno, NEW.Salary, NOW());
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Salary must be at least Rs.50000';
+END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER salary_validation_update
+BEFORE UPDATE ON Emp
+FOR EACH ROW
+BEGIN
+IF NEW.Salary<50000 THEN
+INSERT INTO Tracking VALUES(NEW.Eno, NEW.Salary, NOW());
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Salary must be at least Rs.50000';
+END IF;
+END$$
+DELIMITER ;

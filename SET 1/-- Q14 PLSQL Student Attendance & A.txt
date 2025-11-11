@@ -1,0 +1,43 @@
+-- Q14: PLSQL Student Attendance & Account Balance (exception handling)
+sudo mysql
+CREATE DATABASE student_db;
+USE student_db;
+CREATE TABLE Stud(Roll INT PRIMARY KEY, Att INT, Status VARCHAR(2));
+INSERT INTO Stud VALUES(1,80,'ND'),(2,65,'D'),(3,90,'ND'),(4,50,'D');
+
+DELIMITER $$
+CREATE PROCEDURE CheckAttendance(IN student_roll INT)
+BEGIN
+DECLARE student_att INT;
+DECLARE CONTINUE HANDLER FOR NOT FOUND
+BEGIN
+SELECT 'Student not found' AS message;
+END;
+SELECT Att INTO student_att FROM Stud WHERE Roll=student_roll;
+IF student_att<75 THEN
+UPDATE Stud SET Status='D' WHERE Roll=student_roll;
+SELECT 'Term not granted' AS message;
+ELSE
+UPDATE Stud SET Status='ND' WHERE Roll=student_roll;
+SELECT 'Term granted' AS message;
+END IF;
+END$$
+DELIMITER ;
+
+CREATE TABLE AccountMaster(AccNo INT PRIMARY KEY, Balance DECIMAL(10,2));
+INSERT INTO AccountMaster VALUES(101,25000),(102,5000),(103,50000);
+
+-- Queries start here
+DELIMITER $$
+CREATE PROCEDURE WithdrawAmount(IN account_no INT, IN withdraw_amt DECIMAL(10,2))
+BEGIN
+DECLARE current_bal DECIMAL(10,2);
+SELECT Balance INTO current_bal FROM AccountMaster WHERE AccNo=account_no;
+IF withdraw_amt>current_bal THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Insufficient balance in account';
+ELSE
+UPDATE AccountMaster SET Balance=Balance-withdraw_amt WHERE AccNo=account_no;
+SELECT 'Withdrawal successful' AS message;
+END IF;
+END$$
+DELIMITER ;

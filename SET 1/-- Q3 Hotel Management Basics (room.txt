@@ -1,0 +1,25 @@
+-- Q3: Hotel Management Basics (rooms, guests, bookings, views)
+sudo mysql
+CREATE DATABASE hotel_db;
+USE hotel_db;
+CREATE TABLE Hotel(HotelNo INT PRIMARY KEY, Name VARCHAR(100), City VARCHAR(50));
+CREATE TABLE Room(RoomNo INT, HotelNo INT, Type VARCHAR(50), Price DECIMAL(10,2), PRIMARY KEY(RoomNo,HotelNo), FOREIGN KEY(HotelNo) REFERENCES Hotel(HotelNo));
+CREATE TABLE Guest(GuestNo INT PRIMARY KEY, GuestName VARCHAR(100), GuestAddress VARCHAR(200));
+CREATE TABLE Booking(HotelNo INT, GuestNo INT, DateFrom DATE, DateTo DATE, RoomNo INT, PRIMARY KEY(HotelNo,GuestNo,DateFrom), FOREIGN KEY(HotelNo) REFERENCES Hotel(HotelNo), FOREIGN KEY(GuestNo) REFERENCES Guest(GuestNo));
+INSERT INTO Hotel VALUES(1,'Taj Palace','Mumbai'),(2,'Oberoi Grand','Delhi'),(3,'ITC Royal','Bangalore');
+INSERT INTO Guest VALUES(101,'Rohan Mehta','Bandra Mumbai'),(102,'Kavya Patel','Dwarka Delhi'),(103,'Arjun Singh','Whitefield Bangalore');
+INSERT INTO Room VALUES(101,1,'Single',3500.00),(102,1,'Double',6000.00),(201,2,'Single',4000.00),(202,2,'Family',8500.00),(301,3,'Double',7000.00);
+INSERT INTO Booking VALUES(1,101,'2025-11-10',NULL,101),(1,102,'2025-11-09','2025-11-15',102),(2,103,'2025-11-08','2025-11-12',201);
+
+-- Queries start here
+SELECT * FROM Hotel;
+SELECT COUNT(*) FROM Hotel;
+SELECT r.Price, r.Type FROM Room r JOIN Hotel h ON r.HotelNo=h.HotelNo WHERE h.Name='Taj Palace';
+SELECT h.Name, COUNT(r.RoomNo) AS num_rooms FROM Hotel h LEFT JOIN Room r ON h.HotelNo=r.HotelNo GROUP BY h.Name;
+UPDATE Room SET Price=Price*1.05;
+SELECT * FROM Hotel WHERE City='Mumbai';
+SELECT AVG(Price) FROM Room;
+SELECT g.* FROM Guest g JOIN Booking b ON g.GuestNo=b.GuestNo JOIN Hotel h ON b.HotelNo=h.HotelNo WHERE h.Name='Taj Palace' AND b.DateTo IS NULL;
+SELECT h.Name, COUNT(r.RoomNo) AS num_rooms FROM Hotel h JOIN Room r ON h.HotelNo=r.HotelNo WHERE h.City='Mumbai' GROUP BY h.Name;
+CREATE VIEW MumbaiHotels AS SELECT * FROM Hotel WHERE City='Mumbai';
+SELECT * FROM MumbaiHotels;

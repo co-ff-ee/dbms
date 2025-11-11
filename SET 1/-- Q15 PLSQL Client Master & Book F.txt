@@ -1,0 +1,47 @@
+-- Q15: PLSQL Client Master & Book Fine (user-defined exceptions)
+sudo mysql
+CREATE DATABASE client_db;
+USE client_db;
+CREATE TABLE ClientMaster(ClientID INT PRIMARY KEY, ClientName VARCHAR(100), BalDue DECIMAL(10,2));
+INSERT INTO ClientMaster VALUES(1,'Amit Sharma',5000),(2,'Priya Verma',-1000),(3,'Rahul Singh',10000);
+
+DELIMITER $$
+CREATE PROCEDURE CheckBalDue(IN client_id INT)
+BEGIN
+DECLARE bal_due_amt DECIMAL(10,2);
+SELECT BalDue INTO bal_due_amt FROM ClientMaster WHERE ClientID=client_id;
+IF bal_due_amt<0 THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Balance due cannot be negative';
+ELSE
+SELECT 'Balance due is valid' AS message;
+END IF;
+END$$
+DELIMITER ;
+
+CREATE TABLE Borrow(Rollno INT, Name VARCHAR(100), DateofIssue DATE, NameofBook VARCHAR(100), Status VARCHAR(1));
+CREATE TABLE Fine(Rollno INT, Date_Fine DATE, Amt DECIMAL(10,2));
+INSERT INTO Borrow VALUES(101,'Rohan Mehta','2025-10-01','Database Systems','I'),(102,'Kavya Patel','2025-09-15','Java Programming','I');
+
+-- Queries start here
+DELIMITER $$
+CREATE PROCEDURE CalculateFine(IN roll_no INT, IN book_name VARCHAR(100))
+BEGIN
+DECLARE issue_date DATE;
+DECLARE days_diff INT;
+DECLARE fine_amt DECIMAL(10,2) DEFAULT 0;
+SELECT DateofIssue INTO issue_date FROM Borrow WHERE Rollno=roll_no AND NameofBook=book_name AND Status='I';
+IF issue_date IS NULL THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Book not found or already returned';
+END IF;
+SET days_diff=DATEDIFF(CURDATE(),issue_date);
+IF days_diff BETWEEN 15 AND 30 THEN
+SET fine_amt=(days_diff-15)*5;
+INSERT INTO Fine VALUES(roll_no,CURDATE(),fine_amt);
+ELSEIF days_diff>30 THEN
+SET fine_amt=(30-15)*5+(days_diff-30)*50;
+INSERT INTO Fine VALUES(roll_no,CURDATE(),fine_amt);
+END IF;
+UPDATE Borrow SET Status='R' WHERE Rollno=roll_no AND NameofBook=book_name;
+SELECT CONCAT('Book returned. Fine amount: Rs.',IFNULL(fine_amt,0)) AS message;
+END$$
+DELIMITER ;

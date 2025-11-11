@@ -1,0 +1,29 @@
+-- Q25: MongoDB MapReduce (count by gender, hobbies)
+mongosh
+use peopleDB
+db.people.insertMany([
+{id:0,name:"Leanne Flinn",email:"leanne.flinn@unilogic.com",work:"Unilogic",age:27,gender:"Male",Salary:16660,hobbies:"Acrobatics,Photography,Papier-Mache"},
+{id:1,name:"Priya Sharma",email:"priya@techcorp.com",work:"TechCorp",age:25,gender:"Female",Salary:18000,hobbies:"Photography,Dancing,Reading"},
+{id:2,name:"Amit Verma",email:"amit@infosys.com",work:"Infosys",age:30,gender:"Male",Salary:22000,hobbies:"Acrobatics,Gaming,Photography"},
+{id:3,name:"Sneha Reddy",email:"sneha@wipro.com",work:"Wipro",age:28,gender:"Female",Salary:19500,hobbies:"Dancing,Painting,Reading"},
+{id:4,name:"Rahul Singh",email:"rahul@tcs.com",work:"TCS",age:32,gender:"Male",Salary:25000,hobbies:"Gaming,Photography,Travelling"}
+])
+
+-- Queries start here
+db.people.mapReduce(
+function(){emit(this.gender,1);},
+function(key,values){return Array.sum(values);},
+{out:"gender_count"}
+)
+db.gender_count.find()
+db.people.mapReduce(
+function(){
+var hobbies=this.hobbies.split(',');
+for(var i=0;i<hobbies.length;i++){
+emit(hobbies[i].trim(),1);
+}
+},
+function(key,values){return Array.sum(values);},
+{out:"hobby_count"}
+)
+db.hobby_count.find()

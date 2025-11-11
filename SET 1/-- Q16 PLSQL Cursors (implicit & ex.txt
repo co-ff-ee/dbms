@@ -1,0 +1,63 @@
+-- Q16: PLSQL Cursors (implicit & explicit - account activation, salary increment, student detention)
+sudo mysql
+CREATE DATABASE cursor_db;
+USE cursor_db;
+CREATE TABLE Account(AccNo INT PRIMARY KEY, Status VARCHAR(10), LastTransactionDate DATE);
+INSERT INTO Account VALUES(101,'Inactive','2024-01-01'),(102,'Active','2025-10-01'),(103,'Inactive','2023-06-15');
+
+DELIMITER $$
+CREATE PROCEDURE ActivateAccounts()
+BEGIN
+DECLARE rows_affected INT;
+UPDATE Account SET Status='Active' WHERE Status='Inactive' AND DATEDIFF(CURDATE(),LastTransactionDate)>365;
+SET rows_affected=ROW_COUNT();
+IF rows_affected>0 THEN
+SELECT CONCAT(rows_affected,' accounts activated') AS message;
+ELSE
+SELECT 'No accounts to activate' AS message;
+END IF;
+END$$
+DELIMITER ;
+
+CREATE TABLE Employee(EmpNo INT PRIMARY KEY, Salary DECIMAL(10,2));
+CREATE TABLE IncrementSalary(EmpNo INT, OldSalary DECIMAL(10,2), NewSalary DECIMAL(10,2), IncrementDate DATE);
+INSERT INTO Employee VALUES(1,25000),(2,65000),(3,35000),(4,80000);
+
+-- Queries start here
+DELIMITER $$
+CREATE PROCEDURE IncreaseSalary()
+BEGIN
+DECLARE avg_sal DECIMAL(10,2);
+SELECT AVG(Salary) INTO avg_sal FROM Employee;
+INSERT INTO IncrementSalary(EmpNo,OldSalary,NewSalary,IncrementDate)
+SELECT EmpNo, Salary, Salary*1.10, CURDATE() FROM Employee WHERE Salary<avg_sal;
+UPDATE Employee SET Salary=Salary*1.10 WHERE Salary<avg_sal;
+SELECT 'Salaries updated successfully' AS message;
+END$$
+DELIMITER ;
+
+CREATE TABLE Stud21(Roll INT PRIMARY KEY, Att INT, Status VARCHAR(1));
+CREATE TABLE DStud(Roll INT, Att INT, DetainedDate DATE);
+INSERT INTO Stud21 VALUES(1,80,'P'),(2,65,'P'),(3,90,'P'),(4,50,'P');
+
+DELIMITER $$
+CREATE PROCEDURE MarkDetained()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE v_roll INT;
+DECLARE v_att INT;
+DECLARE cur CURSOR FOR SELECT Roll, Att FROM Stud21 WHERE Att<75;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+OPEN cur;
+read_loop: LOOP
+FETCH cur INTO v_roll, v_att;
+IF done THEN
+LEAVE read_loop;
+END IF;
+UPDATE Stud21 SET Status='D' WHERE Roll=v_roll;
+INSERT INTO DStud VALUES(v_roll,v_att,CURDATE());
+END LOOP;
+CLOSE cur;
+SELECT 'Students marked as detained' AS message;
+END$$
+DELIMITER ;

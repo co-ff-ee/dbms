@@ -1,0 +1,19 @@
+-- Q7: Project-Employee Assignments (who works on what, multiple projects)
+sudo mysql
+CREATE DATABASE project_db;
+USE project_db;
+CREATE TABLE Project(project_id VARCHAR(10) PRIMARY KEY, proj_name VARCHAR(100), chief_arch VARCHAR(100));
+CREATE TABLE Employee(Emp_id INT PRIMARY KEY, Emp_name VARCHAR(100));
+CREATE TABLE Assigned_To(Project_id VARCHAR(10), Emp_id INT, FOREIGN KEY(Project_id) REFERENCES Project(project_id), FOREIGN KEY(Emp_id) REFERENCES Employee(Emp_id));
+INSERT INTO Project VALUES('C353','Aadhaar Integration','Amit Sharma'),('C354','UPI Gateway','Priya Desai'),('C453','Swiggy Clone','Rahul Gupta'),('C355','IRCTC Modernization','Neha Kapoor');
+INSERT INTO Employee VALUES(1,'Vikram Rao'),(2,'Sneha Iyer'),(3,'Karthik Menon'),(4,'Pooja Nair'),(5,'Deepak Reddy');
+INSERT INTO Assigned_To VALUES('C353',1),('C353',2),('C354',2),('C354',3),('C453',4),('C355',5),('C353',3);
+
+-- Queries start here
+SELECT e.* FROM Employee e JOIN Assigned_To a ON e.Emp_id=a.Emp_id WHERE a.Project_id='C353';
+SELECT COUNT(e.Emp_id) AS num_employees FROM Employee e JOIN Assigned_To a ON e.Emp_id=a.Emp_id WHERE a.Project_id='C353';
+SELECT e.* FROM Employee e JOIN Assigned_To a ON e.Emp_id=a.Emp_id JOIN Project p ON a.Project_id=p.project_id WHERE p.proj_name='IRCTC Modernization';
+SELECT e.* FROM Employee e WHERE e.Emp_id IN(SELECT a1.Emp_id FROM Assigned_To a1 WHERE a1.Project_id='C353') AND e.Emp_id IN(SELECT a2.Emp_id FROM Assigned_To a2 WHERE a2.Project_id='C354');
+SELECT Emp_id FROM Employee WHERE Emp_id NOT IN(SELECT Emp_id FROM Assigned_To WHERE Project_id='C453');
+
+--

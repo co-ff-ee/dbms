@@ -1,0 +1,24 @@
+-- Q8: Employee Duty Scheduling (shifts, pay rates, chef assignments)
+sudo mysql
+CREATE DATABASE duty_db;
+USE duty_db;
+CREATE TABLE Employee(emp_no INT PRIMARY KEY, name VARCHAR(100), skill VARCHAR(50), pay_rate DECIMAL(10,2));
+CREATE TABLE Position(posting_no INT PRIMARY KEY, skill VARCHAR(50));
+CREATE TABLE Duty_allocation(posting_no INT, emp_no INT, day DATE, shift VARCHAR(20), FOREIGN KEY(posting_no) REFERENCES Position(posting_no), FOREIGN KEY(emp_no) REFERENCES Employee(emp_no));
+INSERT INTO Employee VALUES(123459,'Ravi Kumar','Chef',850.00),(123460,'Anjali Singh','Waiter',450.00),(123461,'Suresh Reddy','Chef',1200.00),(123462,'Meera Patel','Manager',1500.00),(123463,'Arjun Nair','Waiter',400.00);
+INSERT INTO Position VALUES(1,'Chef'),(2,'Waiter'),(3,'Manager'),(4,'Chef');
+INSERT INTO Duty_allocation VALUES(1,123461,'1986-04-05','Morning'),(1,123461,'1986-04-10','Evening'),(2,123460,'1986-04-05','Morning'),(1,123459,'1986-04-15','Morning'),(1,123459,'1986-04-20','Evening'),(2,123463,'1986-04-25','Morning');
+
+-- Queries start here
+SELECT * FROM Duty_allocation WHERE emp_no=123461 AND YEAR(day)=1986 AND MONTH(day)=4;
+SELECT d.shift FROM Duty_allocation d JOIN Employee e ON d.emp_no=e.emp_no WHERE e.name='Ravi Kumar';
+SELECT * FROM Employee WHERE pay_rate>=(SELECT pay_rate FROM Employee WHERE name='Ravi Kumar');
+SELECT name, pay_rate FROM Employee WHERE emp_no<123460 AND pay_rate>(SELECT MIN(pay_rate) FROM Employee WHERE emp_no>=123460);
+SELECT e.name FROM Employee e WHERE e.skill='Chef' AND NOT EXISTS(SELECT p.posting_no FROM Position p WHERE p.skill='Chef' AND p.posting_no NOT IN(SELECT d.posting_no FROM Duty_allocation d WHERE d.emp_no=e.emp_no));
+SELECT * FROM Employee WHERE pay_rate=(SELECT MIN(pay_rate) FROM Employee);
+SELECT emp_no FROM Duty_allocation GROUP BY emp_no HAVING COUNT(DISTINCT day)>=2;
+SELECT e.name FROM Employee e JOIN Duty_allocation d ON e.emp_no=d.emp_no WHERE e.skill='Chef';
+SELECT * FROM Employee WHERE emp_no NOT IN(SELECT DISTINCT emp_no FROM Duty_allocation);
+SELECT shift, COUNT(DISTINCT emp_no) AS employee_count FROM Duty_allocation GROUP BY shift;
+
+--

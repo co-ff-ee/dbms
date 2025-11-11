@@ -1,0 +1,27 @@
+-- Q21: MongoDB Aggregate Functions (average, min, max, total salary)
+mongosh
+use DYPIT
+db.Teachers.insertMany([
+{Tname:"Praveen Kumar",dno:1,dname:"Computer",experience:5,salary:65000,dateofjoining:new Date("2020-01-15")},
+{Tname:"Rajesh Sharma",dno:2,dname:"IT",experience:8,salary:85000,dateofjoining:new Date("2017-06-10")},
+{Tname:"Sneha Patel",dno:1,dname:"Computer",experience:3,salary:55000,dateofjoining:new Date("2022-03-20")},
+{Tname:"Amit Verma",dno:3,dname:"ETC",experience:6,salary:70000,dateofjoining:new Date("2019-08-05")},
+{Tname:"Priya Desai",dno:3,dname:"ETC",experience:4,salary:45000,dateofjoining:new Date("2021-05-12")}
+])
+db.Students.insertMany([
+{Sname:"Rohan Mehta",rollno:1,class:"TE"},
+{Sname:"Kavya Singh",rollno:2,class:"BE"},
+{Sname:"xyz",rollno:3,class:"SE"}
+])
+
+-- Queries start here
+db.Teachers.find()
+db.Teachers.aggregate([{$match:{dname:"Computer"}},{$group:{_id:"$dname",avgSalary:{$avg:"$salary"}}}])
+db.Teachers.aggregate([{$match:{dname:"ETC"}},{$group:{_id:"$dname",minSalary:{$min:"$salary"},maxSalary:{$max:"$salary"}}}])
+db.Teachers.find({dname:{$in:["Computer","IT","ETC"]},salary:{$gte:10000}})
+db.Students.find({$or:[{rollno:2},{Sname:"xyz"}]})
+db.Teachers.update({Tname:"Praveen Kumar"},{$set:{experience:10}},{upsert:true})
+db.Teachers.updateMany({dname:"IT"},{$set:{dname:"COMP"}})
+db.Teachers.find({},{Tname:1,experience:1,_id:0})
+db.Department.save({dno:4,dname:"Mechanical"})
+db.Teachers.aggregate([{$group:{_id:null,totalSalary:{$sum:"$salary"}}}])

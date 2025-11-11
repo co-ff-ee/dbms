@@ -1,0 +1,25 @@
+-- Q27: MongoDB MapReduce (library - categorize books by page count)
+mongosh
+use library
+db.books.insertMany([
+{title:"Java Programming",author:"Korth",pages:450,year:2020},
+{title:"Python Basics",author:"Chetan Bhagat",pages:180,year:2021},
+{title:"Web Development",author:"Amish Tripathi",pages:520,year:2019},
+{title:"Data Structures",author:"Cormen",pages:890,year:2018},
+{title:"JavaScript Guide",author:"Praveen Kumar",pages:220,year:2022},
+{title:"HTML CSS",author:"Sneha Patel",pages:150,year:2023}
+])
+
+-- Queries start here
+db.books.mapReduce(
+function(){
+if(this.pages<250){
+emit("Small Book",1);
+}else{
+emit("Big Book",1);
+}
+},
+function(key,values){return Array.sum(values);},
+{out:"book_categories"}
+)
+db.book_categories.find()

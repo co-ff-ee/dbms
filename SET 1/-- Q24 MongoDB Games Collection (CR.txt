@@ -1,0 +1,18 @@
+-- Q24: MongoDB Games Collection (CRUD operations, arrays, achievements)
+mongosh
+use gamesDB
+db.games.insertMany([
+{name:"God of War",gametype:"Action",rating:95},
+{name:"Cricket 24",gametype:"Sports",rating:78},
+{name:"Valorant",gametype:"FPS",rating:88},
+{name:"GTA V",gametype:"Action",rating:92},
+{name:"FIFA 24",gametype:"Sports",rating:85}
+])
+
+-- Queries start here
+db.games.find()
+db.games.find().sort({rating:-1}).limit(3)
+db.games.update({name:"God of War"},{$set:{achievements:["Game Master","Speed Demon"]}})
+db.games.update({name:"GTA V"},{$set:{achievements:["Game Master","Speed Demon"]}})
+db.games.find({achievements:{$all:["Game Master","Speed Demon"]}})
+db.games.find({achievements:{$exists:true}})

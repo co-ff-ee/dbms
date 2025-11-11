@@ -1,0 +1,24 @@
+-- Q5: Hotel Guest Patterns (August bookings, most booked room types, today's income)
+sudo mysql
+CREATE DATABASE hotel_db3;
+USE hotel_db3;
+CREATE TABLE Hotel(HotelNo INT PRIMARY KEY, Name VARCHAR(100), City VARCHAR(50));
+CREATE TABLE Room(RoomNo INT, HotelNo INT, Type VARCHAR(50), Price DECIMAL(10,2), PRIMARY KEY(RoomNo,HotelNo), FOREIGN KEY(HotelNo) REFERENCES Hotel(HotelNo));
+CREATE TABLE Guest(GuestNo INT PRIMARY KEY, GuestName VARCHAR(100), GuestAddress VARCHAR(200));
+CREATE TABLE Booking(HotelNo INT, GuestNo INT, DateFrom DATE, DateTo DATE, RoomNo INT, PRIMARY KEY(HotelNo,GuestNo,DateFrom), FOREIGN KEY(HotelNo) REFERENCES Hotel(HotelNo), FOREIGN KEY(GuestNo) REFERENCES Guest(GuestNo));
+INSERT INTO Hotel VALUES(1,'Taj Palace','Mumbai'),(2,'Oberoi Grand','Delhi'),(3,'ITC Royal','Bangalore');
+INSERT INTO Guest VALUES(101,'Rohan Mehta','Bandra Mumbai'),(102,'Kavya Patel','Dwarka Delhi'),(103,'Arjun Singh','Whitefield Bangalore'),(104,'Ananya Reddy','Jubilee Hills Hyderabad');
+INSERT INTO Room VALUES(101,1,'Single',3500.00),(102,1,'Double',6000.00),(201,2,'Single',4000.00),(202,2,'Double',2800.00),(203,2,'Family',3200.00),(301,3,'Double',7000.00);
+INSERT INTO Booking VALUES(1,101,'2025-11-10',NULL,101),(1,102,'2025-08-09','2025-08-15',102),(2,103,'2025-08-08','2025-08-12',201),(2,104,'2025-08-20','2025-08-25',202);
+
+-- Queries start here
+SELECT * FROM Hotel;
+SELECT COUNT(*) FROM Hotel;
+SELECT r.Price, r.Type FROM Room r JOIN Hotel h ON r.HotelNo=h.HotelNo WHERE h.Name='Taj Palace';
+SELECT h.Name, COUNT(r.RoomNo) AS num_rooms FROM Hotel h LEFT JOIN Room r ON h.HotelNo=r.HotelNo GROUP BY h.Name;
+SELECT g.* FROM Guest g JOIN Booking b ON g.GuestNo=b.GuestNo JOIN Hotel h ON b.HotelNo=h.HotelNo WHERE h.Name='Taj Palace' AND b.DateTo IS NULL;
+SELECT * FROM Room WHERE (Type='Double' OR Type='Family') AND Price<3500.00 ORDER BY Price ASC;
+SELECT COUNT(DISTINCT GuestNo) FROM Booking WHERE MONTH(DateFrom)=8;
+SELECT SUM(r.Price) AS total_income FROM Room r JOIN Booking b ON r.RoomNo=b.RoomNo AND r.HotelNo=b.HotelNo JOIN Hotel h ON b.HotelNo=h.HotelNo WHERE h.Name='Taj Palace' AND CURDATE() BETWEEN b.DateFrom AND COALESCE(b.DateTo,CURDATE());
+SELECT h.Name, r.Type, COUNT(*) AS booking_count FROM Booking b JOIN Room r ON b.RoomNo=r.RoomNo AND b.HotelNo=r.HotelNo JOIN Hotel h ON b.HotelNo=h.HotelNo WHERE h.City='Mumbai' GROUP BY h.Name, r.Type ORDER BY h.Name, booking_count DESC;
+UPDATE Room SET Price=Price*1.05;

@@ -1,0 +1,34 @@
+-- Q20: MongoDB Teachers & Students (limit queries, pretty display)
+mongosh
+
+-- Create database and collections
+use DYPIT
+
+-- Insert teacher documents
+db.Teachers.insertMany([
+{Tname:"Praveen Kumar",dno:1,dname:"Computer",experience:5,salary:65000,dateofjoining:new Date("2020-01-15")},
+{Tname:"Rajesh Sharma",dno:2,dname:"IT",experience:8,salary:85000,dateofjoining:new Date("2017-06-10")},
+{Tname:"Sneha Patel",dno:1,dname:"Computer",experience:3,salary:55000,dateofjoining:new Date("2022-03-20")},
+{Tname:"Amit Verma",dno:3,dname:"ETC",experience:6,salary:70000,dateofjoining:new Date("2019-08-05")},
+{Tname:"Priya Desai",dno:2,dname:"IT",experience:4,salary:45000,dateofjoining:new Date("2021-05-12")}
+])
+
+-- Insert student documents
+db.Students.insertMany([
+{Sname:"Rohan Mehta",rollno:1,class:"TE"},
+{Sname:"Kavya Singh",rollno:25,class:"BE"},
+{Sname:"xyz",rollno:3,class:"SE"}
+])
+
+-- Queries start here
+db.Teachers.find().limit(2)
+db.Teachers.find({dname:"Computer"})
+db.Teachers.find({dname:{$in:["Computer","IT","ETC"]}})
+db.Teachers.find({dname:{$in:["Computer","IT","ETC"]},salary:{$gte:25000}})
+db.Students.find({$or:[{rollno:25},{Sname:"xyz"}]})
+db.Teachers.update({Tname:"Praveen Kumar"},{$set:{experience:10}},{upsert:true})
+db.Teachers.updateMany({dname:"IT"},{$set:{dname:"COMP"}})
+db.Teachers.find({},{Tname:1,experience:1,_id:0})
+db.Department.save({dno:4,dname:"Civil"})
+db.Teachers.deleteMany({dname:"IT"})
+db.Teachers.find().sort({Tname:1}).limit(5).pretty()

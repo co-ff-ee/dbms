@@ -1,0 +1,20 @@
+-- Q1: Employee & Department Queries (salary, joins, updates)
+sudo mysql
+CREATE DATABASE company;
+USE company;
+CREATE TABLE dept(deptno INT PRIMARY KEY, deptname VARCHAR(50), location VARCHAR(50));
+CREATE TABLE Emp(eno INT PRIMARY KEY, ename VARCHAR(50), job VARCHAR(50), hiredate DATE, salary DECIMAL(10,2), commission DECIMAL(10,2), deptno INT, FOREIGN KEY(deptno) REFERENCES dept(deptno));
+INSERT INTO dept VALUES(10,'Accounts','Mumbai'),(20,'Research','Pune'),(30,'Sales','Delhi'),(40,'Development','Bangalore');
+INSERT INTO Emp VALUES(1,'Ishaan','Salesman','1980-05-15',45000,8000,30),(2,'Jai','Manager','1981-06-01',75000,NULL,20),(3,'Manish','Salesman','1981-09-15',35000,5000,30),(4,'Sneha','Analyst','1982-01-10',60000,NULL,20),(5,'Tanvi','Clerk','1981-08-25',25000,NULL,10);
+
+-- Queries start here
+SELECT MAX(salary) FROM Emp WHERE job='Salesman';
+SELECT ename FROM Emp WHERE ename LIKE 'I%';
+SELECT * FROM Emp WHERE hiredate<'1981-09-30';
+SELECT * FROM Emp ORDER BY salary DESC;
+SELECT COUNT(*) AS num_emp, AVG(salary) AS avg_salary FROM Emp WHERE deptno=20;
+SELECT AVG(salary) AS avg_salary, MIN(salary) AS min_salary, hiredate FROM Emp WHERE deptno=10 GROUP BY hiredate;
+SELECT e.ename, d.deptname FROM Emp e JOIN dept d ON e.deptno=d.deptno;
+SELECT d.deptname, SUM(e.salary) AS total_salary FROM Emp e JOIN dept d ON e.deptno=d.deptno GROUP BY d.deptname;
+SELECT e.* FROM Emp e JOIN dept d ON e.deptno=d.deptno WHERE d.deptname='Development';
+UPDATE Emp SET salary=salary*1.05 WHERE deptno=10;

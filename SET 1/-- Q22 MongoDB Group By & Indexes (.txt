@@ -1,0 +1,26 @@
+-- Q22: MongoDB Group By & Indexes (dept-wise aggregations, compound indexes)
+mongosh
+use DYPIT
+db.Teachers.insertMany([
+{Tname:"Praveen Kumar",dno:1,dname:"Computer",experience:5,salary:65000,dateofjoining:new Date("2020-01-15")},
+{Tname:"Rajesh Sharma",dno:2,dname:"IT",experience:8,salary:85000,dateofjoining:new Date("2017-06-10")},
+{Tname:"Sneha Patel",dno:1,dname:"Computer",experience:3,salary:55000,dateofjoining:new Date("2022-03-20")},
+{Tname:"Amit Verma",dno:3,dname:"ETC",experience:6,salary:70000,dateofjoining:new Date("2019-08-05")},
+{Tname:"Priya Desai",dno:2,dname:"IT",experience:4,salary:45000,dateofjoining:new Date("2021-05-12")},
+{Tname:"Karan Singh",dno:1,dname:"Computer",experience:7,salary:75000,dateofjoining:new Date("2018-09-01")}
+])
+db.Students.insertMany([
+{Sname:"Rohan Mehta",rollno:1,class:"TE"},
+{Sname:"Kavya Singh",rollno:2,class:"BE"},
+{Sname:"Arjun Patel",rollno:3,class:"SE"}
+])
+
+-- Queries start here
+db.Teachers.aggregate([{$group:{_id:"$dname",avgSalary:{$avg:"$salary"}}}])
+db.Teachers.aggregate([{$group:{_id:"$dname",empCount:{$sum:1}}}])
+db.Teachers.aggregate([{$group:{_id:"$dname",totalSalary:{$sum:"$salary"}}},{$match:{totalSalary:{$gte:50000}}}])
+db.Teachers.aggregate([{$group:{_id:"$dname",maxSalary:{$max:"$salary"},minSalary:{$min:"$salary"},avgSalary:{$avg:"$salary"}}}])
+db.Teachers.createIndex({Tname:1},{unique:true})
+db.Teachers.createIndex({dname:1,salary:1})
+db.getCollectionInfos()
+db.Teachers.getIndexes()
