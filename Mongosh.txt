@@ -1,0 +1,21 @@
+if ! command -v mongod &> /dev/null; then 
+  echo " MongoDB not found — installing...";
+  sudo apt update && sudo apt install -y mongodb-org mongodb-mongosh;
+  sudo systemctl enable mongod;
+  sudo systemctl start mongod;
+else 
+  echo " MongoDB already installed.";
+  sudo systemctl start mongod;
+fi && 
+echo " Connecting to MongoDB shell..." && mongosh
+
+
+
+HOW TO RUN AND CONNECT MONGODB
+
+
+
+
+
+sudo systemctl start mongod   # Start MongoDB service
+mongosh                       # Open MongoDB shell
